@@ -1,1 +1,17 @@
 {% extends 'common/base.html' %}
+
+{% block content %}
+  <form action="{% url 'recipe_new' %}" method="post">
+    {% csrf_token %}
+    <div>
+      <label for="recipeName">Name</label><br>
+      <input type="text" name="name" id="recipeName">
+    </div>
+    <div>
+      <label for="recipeDescription">Description</label><br>
+      <textarea name="description" id="recipeDescription" cols="30" rows="10"></textarea>
+    </div>
+    <input type="submit" value="決定">
+  </form>
+{% endblock content %}
+

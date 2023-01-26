@@ -1,1 +1,37 @@
 {% extends 'common/base.html' %}
+
+{% block content %}
+  <div>
+    <p>レシピ名: {{ recipe.name }}</p>
+    <p>投稿者: {{ recipe.user }}</p>
+    <p>作り方:<br>{{ recipe.description | linebreaksbr }}</p>
+    {% if recipe.user.id == user.id %}
+      <form action="{% url 'recipe_destroy' recipe.id %}" method="post">
+        {% csrf_token %}
+        <input type="submit" value="削除" onclick='return confirm("本当に削除しますか？");'>
+      </form>
+      <a href="{% url 'recipe_edit' recipe.id %}">レシピの編集</a>
+      <a href="{% url 'ingredient_new' recipe.id %}">材料の追加</a>
+    {% endif %}
+  </div>
+
+  <div>
+    {% if ingredients %}
+      {% for ingredient in ingredients %}
+        <div>
+          <p>材料名 : {{ ingredient.name }}</p>
+          <p>量: {{ ingredient.amout }}</p>
+          {% if ingredient.recipe.user.id == user.id %}
+            <form action="{% url 'ingredient_destroy' ingredient.id %}" method="post">
+              {% csrf_token %}
+              <input type="submit" value="削除" onclick='return confirm("本当に削除しますか？");'>
+            </form>
+            <a href="{% url 'ingredient_edit' ingredient.id %}">編集</a>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>ingredients does not exists</p>
+    {% endif %}
+  </div>
+{% endblock  %}

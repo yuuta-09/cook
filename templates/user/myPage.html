@@ -16,7 +16,7 @@
 
   {% if recipes %}
     {% for recipe in recipes %}
-      <p>{{ recipe.name }}</p>
+      <p><a href="{% url 'recipe_show' recipe.id %}">{{ recipe.name }}</a></p>
       <p>{{ recipe.description }}</p>
     {% endfor %}
   {% else %}

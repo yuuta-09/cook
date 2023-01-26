@@ -1,1 +1,16 @@
 {% extends 'common/base.html' %}
+
+{% block content %}
+  <form action="{% url 'ingredient_edit' ingredient.id %}" method="post">
+    {% csrf_token %}
+    <div>
+      <label for="ingredientName">材料</label><br>
+      <input type="text" name="name" id="ingredientName" value={{ ingredient.name }}>
+    </div>
+    <div>
+      <label for="ingredientAmount">量</label><br>
+      <input type="text" name="amount" id="ingredientAmount" value={{ ingredient.amout }}>
+    </div>
+    <input type="submit" value="決定">
+  </form>
+{% endblock %}

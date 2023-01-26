@@ -1,1 +1,17 @@
 {% extends 'common/base.html' %}
+
+{% block content %}
+  <p>{{ logged_in_user }}</p>
+  <form action="{% url 'recipe_edit' recipe.id %}" method="post">
+    {% csrf_token %}
+    <div>
+      <label for="recipeName">レシピ名</label><br>
+      <input type="text" name="name" id="recipeName" value={{ recipe.name }}>
+    </div>
+    <div>
+      <label for="recipeDescription">レシピの詳細</label><br>
+      <textarea name="description" id="recipeDescription" cols="100" rows="10">{{ recipe.description }}</textarea>
+    </div>
+    <input type="submit" value="決定">
+  </form>
+{% endblock %}

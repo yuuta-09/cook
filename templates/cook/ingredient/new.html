@@ -1,0 +1,30 @@
+{% extends 'common/base.html' %}
+
+{% block content %}
+  <form action="{% url 'ingredient_new' recipe.id %}" method="POST">
+    {% csrf_token %}
+      {% for form in formset %}
+      <h4>Ingredient</h4> 
+        <tr>
+          <div style="margin-bottom: 10px">
+            {% for field in form %}
+              {% if field.name != "DELETE" %}
+                {% if 'recipe' not in field.auto_id %}
+                  {% if '-id' not in field.auto_id %}
+                    <div>
+                      <label for="{{ field.auto_id }}">{{ field.label }}:</label><br>
+                      <td>{{ field }}</td>
+                    </div>
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </tr>
+        {% if forloop.first %}
+          <td>{{ formset.management_form }}</td>
+        {% endif %}
+      {% endfor %}
+    <input type="submit" value="決定">
+  </form>
+{% endblock %}
