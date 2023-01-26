@@ -1,0 +1,25 @@
+{% extends 'common/base.html' %}
+{% load static %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'user/css/myPage.css' %}">
+{% endblock %}
+
+{% block content %}
+  <h2>User Name: {{ user }}</h2>
+  {% if user.email %}
+    <p>{{ user.email }}</p>
+  {% else %}
+    <p>The mail has not been registered.</p>
+  {% endif %}
+
+
+  {% if recipes %}
+    {% for recipe in recipes %}
+      <p>{{ recipe.name }}</p>
+      <p>{{ recipe.description }}</p>
+    {% endfor %}
+  {% else %}
+    <p>You have not submitted any recipes yet.</p>
+  {% endif %}
+{% endblock %}

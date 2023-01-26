@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block head_title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'common/css/base.css' %}">
+    {% block extra_head %}
+    {% endblock %}
+  </head>
+  <body>
+    {% block body %}
+
+    <header class="header">
+      <div class="header-inner">
+        <h1 class="title">
+          <a href="{% url 'home_top' %}">Cook</a>
+        </h1>
+        <ul class="header-nav">
+          <li class="nav-item"><a href="{% url 'user_my_page' %}">My Page</a></li>
+          {% if user.is_authenticated %}
+          <li class="nav-item"><a href="{% url 'recipe_index' %}">Recipes</a></li>
+          <li class="nav-item"><a href="{% url 'recipe_new' %}">New Recipe</a></li>
+          <li class="nav-item"><a href="{% url 'account_email' %}">Change E-mail</a></li>
+          <li class="nav-item"><a href="{% url 'account_logout' %}">Sign Out</a></li>
+          {% else %}
+          <li class="nav-item"><a href="{% url 'recipe_index' %}"></a>Recipes</li>
+          <li class="nav-item"><a href="{% url 'account_login' %}">Sign In</a></li>
+          <li class="nav-item"><a href="{% url 'account_signup' %}">Sign Up</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </header>
+
+    <main class="main">
+        {% if messages %}
+        <div>
+          <strong>Messages:</strong>
+          <ul>
+            {% for message in messages %}
+            <li>{{message}}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+    
+        {% block content %}
+        {% endblock %}
+    </main>
+    {% endblock %}
+    
+    {% block extra_body %}
+    {% endblock %}
+  </body>
+</html>
