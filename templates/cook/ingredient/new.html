@@ -1,12 +1,19 @@
 {% extends 'common/base.html' %}
 
 {% block content %}
-  <form action="{% url 'ingredient_new' recipe.id %}" method="POST">
+  <form method="POST">
     {% csrf_token %}
-      {% for form in formset %}
-      <h4>Ingredient</h4> 
+    <h4 class="mb-3">材料の追加</h4> 
+    <button name="button_add" type="submit" class="btn btn-outline-primary mb-2">
+      行を追加する
+    </button>
+    <br>
+    <button type="submit" name="button_reset" class="btn btn-outline-warning mb-4">
+      行の数をリセットする
+    </button>
+      {% for form in form %}
         <tr>
-          <div style="margin-bottom: 10px">
+          <div class="mb-4">
             {% for field in form %}
               {% if field.name != "DELETE" %}
                 {% if 'recipe' not in field.auto_id %}
@@ -25,6 +32,8 @@
           <td>{{ formset.management_form }}</td>
         {% endif %}
       {% endfor %}
-    <input type="submit" value="決定">
+      <button name="btn_submit" type="submit" class="btn btn-primary">
+        決定
+      </button>
   </form>
 {% endblock %}

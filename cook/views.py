@@ -4,6 +4,9 @@ from cook.models import Recipe, Ingredient
 from django.forms import inlineformset_factory
 from cook.forms import IngredientForm
 from django.contrib.auth.decorators import login_required
+from django.views.generic.edit import FormView
+from django.urls import reverse
+from django import forms
 
 
 # recipe
@@ -81,6 +84,64 @@ def destroy_recipe(request, recipe_id):
 
 
 # ingredient
+FORM_VALUES = {}
+INGREDIENT_FORM_NUMBER = 3
+
+
+class IngredientNew(FormView):
+  def get_success_url(self):
+    return reverse('ingredient_new', kwargs={'recipe_id': self.kwargs['recipe_id']})
+
+  def get_recipe(self):
+    recipe = Recipe.objects.get(self.kwargs['recipe_id'])
+    return recipe
+
+  def get_data(self):
+    return self.request.POST
+
+  template_name = 'cook/ingredient/new.html'
+  recipe = get_recipe
+  success_url = get_success_url
+  IngredientFormSet = inlineformset_factory(
+    parent_model=Recipe,
+    model=Ingredient,
+    form=IngredientForm,
+    extra=3,
+    max_num=10,
+  )
+  form_class=IngredientFormSet
+
+  def get_form_kwargs(self, *args, **kwargs):
+    kwargs = super().get_form_kwargs(*args, **kwargs)
+    print(FORM_VALUES)
+    if FORM_VALUES:
+      kwargs['data'] = FORM_VALUES
+    return kwargs
+
+  def post(self, request, *args, **kwargs):
+    global FORM_VALUES
+    global INGREDIENT_FORM_NUMBER
+    if 'button_add' in request.POST:
+      INGREDIENT_FORM_NUMBER += 1
+      FORM_VALUES = request.POST.copy()
+      FORM_VALUES['ingredients-TOTAL_FORMS'] = INGREDIENT_FORM_NUMBER
+      print(FORM_VALUES)
+    elif 'button_reset' in request.POST:
+      INGREDIENT_FORM_NUMBER = 3
+      FORM_VALUES['ingredients-TOTAL_FORMS'] = INGREDIENT_FORM_NUMBER
+    else:
+      formset = self.form_class(data=self.request.POST, instance = self.recipe, queryset=Ingredient.objects.none())
+      if formset.is_valid():
+        if check_user(request, self.recipe.user):
+          formset.save()
+        else:
+          return render(request, 'error/http401.html', {'errors': ['投稿者のみが材料を追加できます。']}, status=401)
+      else:
+        return Http404("Error.")
+      return redirect('recipe_show', self.kwargs['recipe_id'])
+    return super().post(request, args, kwargs)
+
+
 @login_required
 def ingredient_new(request, recipe_id):
   recipe = Recipe.objects.get(pk=recipe_id)
@@ -95,15 +156,15 @@ def ingredient_new(request, recipe_id):
       return redirect("recipe_show", recipe.id)
     else:
       raise Http404("error")
-    
+
   else:
     formset = IngredientFormSet(instance=recipe, queryset=Ingredient.objects.none())
-    
+
   params = {
     'recipe': recipe,
     'formset': formset
   }
-    
+
   return render(request, "cook/ingredient/new.html", params)
 
 
@@ -113,7 +174,7 @@ def update_ingredient(request, ingredient_id):
     ingredient = Ingredient.objects.get(pk=ingredient_id)
   except Ingredient.DoesNotExist:
     raise Http404("Ingredient does not exist.")
-  
+
   if request.method == 'POST':
     ingredient.name = request.POST['name']
     ingredient.amout = request.POST['amount']
@@ -122,11 +183,11 @@ def update_ingredient(request, ingredient_id):
     else:
       return render(request, 'error/http401.html', {'errors': ['投稿者のみが材料の更新ができます。']}, status=401)
     return redirect('recipe_show', ingredient.recipe.id)
-  
+
   param = {
     'ingredient': ingredient
   }
-  
+
   return render(request, "cook/ingredient/edit.html", param)
 
 @login_required
@@ -135,13 +196,13 @@ def destroy_ingredient(request, ingredient_id):
     ingredient = Ingredient.objects.get(pk=ingredient_id)
   except Ingredient.DoesNotExist:
     raise Http404("Ingredient does not exist.")
-  
+
   if request.method == 'POST':
     if check_user(request, ingredient.recipe.user):
       ingredient.delete()
     else:
       return render(request, 'error/http401.html', {'errors': ['投稿者のみが材料の削除をできます。']}, status=401)
-    
+
   return redirect('recipe_show', ingredient.recipe.id)
 
 

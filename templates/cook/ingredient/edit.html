@@ -1,16 +1,21 @@
 {% extends 'common/base.html' %}
 
 {% block content %}
-  <form action="{% url 'ingredient_edit' ingredient.id %}" method="post">
-    {% csrf_token %}
-    <div>
-      <label for="ingredientName">材料</label><br>
-      <input type="text" name="name" id="ingredientName" value={{ ingredient.name }}>
+  <div class="container">
+    <div class="row">
+      <h2 class="mb-3">具材の編集</h2>
+      <form action="{% url 'ingredient_edit' ingredient.id %}" method="post">
+        {% csrf_token %}
+        <div class="mb-2">
+          <label for="ingredientName">材料</label><br>
+          <input type="text" name="name" id="ingredientName" value={{ ingredient.name }}>
+        </div>
+        <div>
+          <label for="ingredientAmount">量</label><br>
+          <input type="text" name="amount" id="ingredientAmount" value={{ ingredient.amout }}>
+        </div>
+        <input type="submit" value="決定" class="btn btn-primary mt-3">
+      </form>
     </div>
-    <div>
-      <label for="ingredientAmount">量</label><br>
-      <input type="text" name="amount" id="ingredientAmount" value={{ ingredient.amout }}>
-    </div>
-    <input type="submit" value="決定">
-  </form>
+  </div>
 {% endblock %}

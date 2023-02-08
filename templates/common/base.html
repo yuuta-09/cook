@@ -1,11 +1,17 @@
 {% load static %}
+{% load django_bootstrap5 %}
 <!DOCTYPE html>
-<html>
+<html lang= lang="{{ LANGUAGE_CODE|default:'ja' }}">
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block head_title %}{% endblock %}</title>
+
+    <!-- static file -->
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
     <link rel="stylesheet" href="{% static 'common/css/base.css' %}">
+    
     {% block extra_head %}
     {% endblock %}
   </head>

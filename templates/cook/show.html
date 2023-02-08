@@ -1,37 +1,44 @@
 {% extends 'common/base.html' %}
 
 {% block content %}
-  <div>
-    <p>レシピ名: {{ recipe.name }}</p>
+  <div class="row mb-5">
+    <h2 class="mb-4">{{ recipe.name }}</h2>
     <p>投稿者: {{ recipe.user }}</p>
     <p>作り方:<br>{{ recipe.description | linebreaksbr }}</p>
     {% if recipe.user.id == user.id %}
-      <form action="{% url 'recipe_destroy' recipe.id %}" method="post">
+      <div class="px-0">
+        <a href="{% url 'recipe_edit' recipe.id %}" class="btn btn-primary col-2 mb-2">レシピの編集</a><br>
+        <a href="{% url 'ingredient_new' recipe.id %}" class="btn border-primary col-2 mb-2">材料の追加</a>
+      </div>
+      <form action="{% url 'recipe_destroy' recipe.id %}" method="post" class="col-12 px-0">
         {% csrf_token %}
-        <input type="submit" value="削除" onclick='return confirm("本当に削除しますか？");'>
+        <input type="submit" value="削除" onclick='return confirm("本当に削除しますか？");' class="btn btn-danger col-2">
       </form>
-      <a href="{% url 'recipe_edit' recipe.id %}">レシピの編集</a>
-      <a href="{% url 'ingredient_new' recipe.id %}">材料の追加</a>
     {% endif %}
   </div>
 
-  <div>
+  <div class="row">
+    <h2 class="mb-4">具材</h2>
     {% if ingredients %}
+    <div class="d-flex flex-wrap">
       {% for ingredient in ingredients %}
-        <div>
-          <p>材料名 : {{ ingredient.name }}</p>
-          <p>量: {{ ingredient.amout }}</p>
+        <div class="col-3 mb-3">
+          <div class="mb-2">
+            <p class="mb-0">材料名 : {{ ingredient.name }}</p>
+            <p class="mb-0">量: {{ ingredient.amout }}</p>
+          </div>
           {% if ingredient.recipe.user.id == user.id %}
-            <form action="{% url 'ingredient_destroy' ingredient.id %}" method="post">
+            <a href="{% url 'ingredient_edit' ingredient.id %}" class="btn btn-primary">編集</a>
+            <form action="{% url 'ingredient_destroy' ingredient.id %}" method="post" class="d-inline">
               {% csrf_token %}
-              <input type="submit" value="削除" onclick='return confirm("本当に削除しますか？");'>
+              <input type="submit" value="削除" onclick='return confirm("本当に削除しますか？");' class="btn btn-danger">
             </form>
-            <a href="{% url 'ingredient_edit' ingredient.id %}">編集</a>
           {% endif %}
         </div>
       {% endfor %}
+    </div>
     {% else %}
-      <p>ingredients does not exists</p>
+      <p>材料が登録されていません。</p>
     {% endif %}
   </div>
 {% endblock  %}

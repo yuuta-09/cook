@@ -6,6 +6,6 @@ class IngredientForm(forms.ModelForm):
     model = Ingredient
     fields = ('name', 'amout')
     labels = {
-      'name': 'Name',
-      'amout': 'Amount',
+      'name': '材料名',
+      'amout': '量',
     }
