@@ -3,37 +3,49 @@
 {% block content %}
   <form method="POST">
     {% csrf_token %}
-    <h4 class="mb-3">材料の追加</h4> 
+    <h4 class="mb-3">材料の追加</h4>
     <button name="button_add" type="submit" class="btn btn-outline-primary mb-2">
       行を追加する
     </button>
     <br>
-    <button type="submit" name="button_reset" class="btn btn-outline-warning mb-4">
+    <button type="submit" name="button_reset" onclick='return confirm("行の数をリセットすると現在フォームに入力されている値もリセットされます。\n本当に削除しますか？");' class="btn btn-outline-warning mb-4">
       行の数をリセットする
     </button>
-      {% for form in form %}
-        <tr>
-          <div class="mb-4">
-            {% for field in form %}
-              {% if field.name != "DELETE" %}
-                {% if 'recipe' not in field.auto_id %}
-                  {% if '-id' not in field.auto_id %}
-                    <div>
-                      <label for="{{ field.auto_id }}">{{ field.label }}:</label><br>
-                      <td>{{ field }}</td>
-                    </div>
-                  {% endif %}
-                {% endif %}
+    
+    {{ form.management_form }}
+    {% for form in form.forms %}
+      <div class="mb-4">
+        {% for field in form %}
+          {% if field.name != "DELETE" %}
+            {% if 'recipe' not in field.auto_id %}
+              {% if '-id' not in field.auto_id %}
+                <div>
+                  <label for="{{ field.auto_id }}">{{ field.label }}:</label><br>
+                  {{ field }}
+                </div>
               {% endif %}
-            {% endfor %}
-          </div>
-        </tr>
-        {% if forloop.first %}
-          <td>{{ formset.management_form }}</td>
-        {% endif %}
-      {% endfor %}
-      <button name="btn_submit" type="submit" class="btn btn-primary">
-        決定
-      </button>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <button name="btn_submit" type="submit" class="btn btn-primary">
+      決定
+    </button>
   </form>
+{% endblock %}
+
+{% block extra_body %}
+<script>
+  $(function(){
+    $("input").on("keydown", function(e) {
+      if ((e.which && e.which === 13) || (e.keyCode && e.keyCode === 13)) {
+        console.log('interrupted enter key');
+        return false;
+      } else {
+        return true;
+      }
+    });
+  });
+</script>
 {% endblock %}

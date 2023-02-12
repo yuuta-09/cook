@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from cook.models import Recipe, Ingredient
 from django.forms import inlineformset_factory
 from cook.forms import IngredientForm
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 from django.views.generic.edit import FormView
 from django.urls import reverse
-from django import forms
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 # recipe
@@ -84,62 +85,92 @@ def destroy_recipe(request, recipe_id):
 
 
 # ingredient
-FORM_VALUES = {}
-INGREDIENT_FORM_NUMBER = 3
+NUM_OF_FORMS = 3
+class IngredientNew(LoginRequiredMixin, FormView):
+  template_name = 'cook/ingredient/new.html'
+  
+  def get_form_class(self):
+    return inlineformset_factory(Recipe, Ingredient, form=IngredientForm, extra=NUM_OF_FORMS, max_num=10)
 
-
-class IngredientNew(FormView):
   def get_success_url(self):
     return reverse('ingredient_new', kwargs={'recipe_id': self.kwargs['recipe_id']})
-
+    
   def get_recipe(self):
-    recipe = Recipe.objects.get(self.kwargs['recipe_id'])
+    recipe = Recipe.objects.get(pk=self.kwargs['recipe_id'])
     return recipe
 
-  def get_data(self):
-    return self.request.POST
-
-  template_name = 'cook/ingredient/new.html'
-  recipe = get_recipe
-  success_url = get_success_url
-  IngredientFormSet = inlineformset_factory(
-    parent_model=Recipe,
-    model=Ingredient,
-    form=IngredientForm,
-    extra=3,
-    max_num=10,
-  )
-  form_class=IngredientFormSet
-
-  def get_form_kwargs(self, *args, **kwargs):
-    kwargs = super().get_form_kwargs(*args, **kwargs)
-    print(FORM_VALUES)
-    if FORM_VALUES:
-      kwargs['data'] = FORM_VALUES
-    return kwargs
-
-  def post(self, request, *args, **kwargs):
-    global FORM_VALUES
-    global INGREDIENT_FORM_NUMBER
-    if 'button_add' in request.POST:
-      INGREDIENT_FORM_NUMBER += 1
-      FORM_VALUES = request.POST.copy()
-      FORM_VALUES['ingredients-TOTAL_FORMS'] = INGREDIENT_FORM_NUMBER
-      print(FORM_VALUES)
-    elif 'button_reset' in request.POST:
-      INGREDIENT_FORM_NUMBER = 3
-      FORM_VALUES['ingredients-TOTAL_FORMS'] = INGREDIENT_FORM_NUMBER
+  def form_valid(self, form):
+    recipe = self.get_recipe()
+    if recipe.user == self.request.user:
+      form.instance = recipe
+      form.save()
+      return redirect('recipe_show', self.kwargs['recipe_id'])
     else:
-      formset = self.form_class(data=self.request.POST, instance = self.recipe, queryset=Ingredient.objects.none())
+      return render(self.request, 'error/http401.html', {'errors': ['投稿者のみが材料を追加できます。']}, status=401)
+
+  @method_decorator(login_required)
+  def dispatch(self, request, *args, **kwargs):
+    return super().dispatch(request, *args, **kwargs)
+
+  # POSTリクエストの時の処理
+  def post(self, request, *args, **kwargs):
+    global NUM_OF_FORMS
+    recipe = self.get_recipe()
+    
+    # フォームを追加するボタンが押されたとき
+    if 'button_add' in request.POST:
+      NUM_OF_FORMS += 1 # formの数を増やす
+      request.session['form_data'] = request.POST # 現在のフォームデータを保存
+      request.session.modified = True
+      print(NUM_OF_FORMS)
+      return redirect('ingredient_new', recipe.id)
+    
+    # フォームの数をリセットするボタンが押されたとき
+    elif 'button_reset' in request.POST:
+      NUM_OF_FORMS = 3 # formの数をリセット
+      return redirect('ingredient_new', recipe.id)
+    
+    # 決定ボタンが押されたとき
+    else:
+      form_class = self.get_form_class()
+      formset = form_class(
+        data=self.request.POST, 
+        instance=recipe, 
+        queryset=Ingredient.objects.none()
+      )
+      NUM_OF_FORMS = 3 # フォームの数をリセット
+      # formが有効かの判定
       if formset.is_valid():
-        if check_user(request, self.recipe.user):
+        if check_user(request, recipe.user):
           formset.save()
         else:
           return render(request, 'error/http401.html', {'errors': ['投稿者のみが材料を追加できます。']}, status=401)
       else:
-        return Http404("Error.")
+        return HttpResponse("Error.")
       return redirect('recipe_show', self.kwargs['recipe_id'])
-    return super().post(request, args, kwargs)
+    
+  
+  def get(self, request, *args, **kwargs):
+    recipe = self.get_recipe()
+    form_data = request.session.get('form_data', None)
+    form_class = self.get_form_class()
+    if form_data:
+      form_data['ingredients-TOTAL_FORMS'] = NUM_OF_FORMS
+      # フォームを追加するボタンが押されたときに保存された値を元にフォームを作成
+      formset = form_class(
+          data=form_data,
+          instance=recipe,
+          queryset=Ingredient.objects.none()
+      )
+      del request.session['form_data']
+    else:
+      # 初期状態では3つのフォームを作成
+      formset = form_class(
+          instance=recipe,
+          queryset=Ingredient.objects.none()
+      )
+
+    return render(request, self.template_name, {'form': formset})
 
 
 @login_required

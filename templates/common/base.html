@@ -28,7 +28,6 @@
           {% if user.is_authenticated %}
           <li class="nav-item"><a href="{% url 'recipe_index' %}">Recipes</a></li>
           <li class="nav-item"><a href="{% url 'recipe_new' %}">New Recipe</a></li>
-          <li class="nav-item"><a href="{% url 'account_email' %}">Change E-mail</a></li>
           <li class="nav-item"><a href="{% url 'account_logout' %}">Sign Out</a></li>
           {% else %}
           <li class="nav-item"><a href="{% url 'recipe_index' %}">Recipes</a></li>
@@ -56,6 +55,7 @@
     </main>
     {% endblock %}
     
+    <script src="{% static 'common/js/jquery-3.6.0.min.js' %}"></script>
     {% block extra_body %}
     {% endblock %}
   </body>

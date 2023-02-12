@@ -1,12 +1,12 @@
 {% extends 'common/base.html' %}
 
 {% block content %}
-  <div class="row mb-5">
-    <h2 class="mb-4">{{ recipe.name }}</h2>
-    <p>投稿者: {{ recipe.user }}</p>
-    <p>作り方:<br>{{ recipe.description | linebreaksbr }}</p>
+  <div class="row" style="margin-bottom: 120px">
+    <h2 class="mb-4 fs-1">{{ recipe.name }}</h2>
+    <p class="fs-4">投稿者: {{ recipe.user }}</p>
+    <p class="fs-5">作り方:<br>{{ recipe.description | linebreaksbr }}</p>
     {% if recipe.user.id == user.id %}
-      <div class="px-0">
+      <div class="px-0 mt-5">
         <a href="{% url 'recipe_edit' recipe.id %}" class="btn btn-primary col-2 mb-2">レシピの編集</a><br>
         <a href="{% url 'ingredient_new' recipe.id %}" class="btn border-primary col-2 mb-2">材料の追加</a>
       </div>
@@ -17,12 +17,12 @@
     {% endif %}
   </div>
 
-  <div class="row">
-    <h2 class="mb-4">具材</h2>
+  <div class="row" style="margin-bottom: 120px">
+    <h2 class="mb-4 fs-1">具材</h2>
     {% if ingredients %}
     <div class="d-flex flex-wrap">
       {% for ingredient in ingredients %}
-        <div class="col-3 mb-3">
+        <div class="col-2 mb-3 border border-secondary p-3 mx-3">
           <div class="mb-2">
             <p class="mb-0">材料名 : {{ ingredient.name }}</p>
             <p class="mb-0">量: {{ ingredient.amout }}</p>
